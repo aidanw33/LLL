@@ -18,7 +18,7 @@ export type RawSegment = {
 }
 
 export async function fetchTranscript(youtubeId: string): Promise<RawSegment[]> {
-  const mod = await import('youtube-transcript')
+  const mod = await import('youtube-transcript/dist/youtube-transcript.esm.js')
   const segments = await mod.YoutubeTranscript.fetchTranscript(youtubeId)
   return segments.map((s: { text: string; offset: number; duration: number }) => ({
     text: s.text,
