@@ -1,7 +1,3 @@
-import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url)
-const { YoutubeTranscript } = require('youtube-transcript')
-
 export function parseYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
@@ -22,7 +18,8 @@ export type RawSegment = {
 }
 
 export async function fetchTranscript(youtubeId: string): Promise<RawSegment[]> {
-  const segments = await YoutubeTranscript.fetchTranscript(youtubeId)
+  const mod = await import('youtube-transcript')
+  const segments = await mod.YoutubeTranscript.fetchTranscript(youtubeId)
   return segments.map((s: { text: string; offset: number; duration: number }) => ({
     text: s.text,
     offset: s.offset / 1000,

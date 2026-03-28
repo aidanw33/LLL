@@ -1,8 +1,5 @@
-import { createRequire } from 'node:module'
 import type { VercelRequest } from '@vercel/node'
-
-const require = createRequire(import.meta.url)
-const { createClient } = require('@supabase/supabase-js')
+import { createClient } from '@supabase/supabase-js'
 
 export async function verifyAuth(req: VercelRequest): Promise<string | null> {
   const authHeader = req.headers.authorization
