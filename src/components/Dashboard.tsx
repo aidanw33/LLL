@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { YouTubeUrlInput } from './video/YouTubeUrlInput'
 
 export function Dashboard() {
   const { user, signOut } = useAuth()
+  const [showImport, setShowImport] = useState(false)
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'there'
   const avatarUrl = user?.user_metadata?.avatar_url
@@ -36,12 +39,15 @@ export function Dashboard() {
 
         <div className="grid sm:grid-cols-3 gap-6">
           <div className="rounded-xl bg-slate-800/50 border border-slate-700/50 p-6 flex flex-col">
-            <div className="text-3xl mb-4">📖</div>
-            <h3 className="text-lg font-semibold mb-2">Import text</h3>
+            <div className="text-3xl mb-4">🎬</div>
+            <h3 className="text-lg font-semibold mb-2">Watch video</h3>
             <p className="text-sm text-slate-400 mb-6 flex-1">
-              Paste an article or text in your target language to start reading.
+              Import a YouTube video and learn from its transcript.
             </p>
-            <button className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-sm font-medium transition-colors w-full">
+            <button
+              onClick={() => setShowImport(true)}
+              className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-sm font-medium transition-colors w-full"
+            >
               Import
             </button>
           </div>
@@ -66,9 +72,11 @@ export function Dashboard() {
         </div>
 
         <p className="text-center text-slate-500 mt-16">
-          Import your first text to get started.
+          Import your first video to get started.
         </p>
       </main>
+
+      {showImport && <YouTubeUrlInput onClose={() => setShowImport(false)} />}
     </div>
   )
 }
