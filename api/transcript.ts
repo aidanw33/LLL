@@ -38,7 +38,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let rawSegments
   try {
     rawSegments = await fetchTranscript(youtubeId)
-  } catch {
+  } catch (err) {
+    console.error('fetchTranscript failed:', err)
     return res.status(404).json({ error: 'No captions available for this video' })
   }
 
