@@ -1,4 +1,4 @@
-import { useAuth } from './contexts/AuthContext'
+import { useAuth } from './hooks/useAuth'
 import { LandingPage } from './components/LandingPage'
 import { Dashboard } from './components/Dashboard'
 import { LoadingScreen } from './components/LoadingScreen'

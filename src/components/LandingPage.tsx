@@ -1,4 +1,4 @@
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 export function LandingPage() {
   const { signInWithGoogle } = useAuth()
