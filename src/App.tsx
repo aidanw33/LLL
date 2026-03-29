@@ -4,6 +4,7 @@ import { LandingPage } from './components/LandingPage'
 import { Dashboard } from './components/Dashboard'
 import { LoadingScreen } from './components/LoadingScreen'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AppLayout } from './components/layout/AppLayout'
 import { VideoPlayerPage } from './components/video/VideoPlayerPage'
 import { FlashcardsPage } from './components/flashcards/FlashcardsPage'
 
@@ -11,7 +12,13 @@ function HomePage() {
   const { session, loading } = useAuth()
 
   if (loading) return <LoadingScreen />
-  if (session) return <Dashboard />
+  if (session) {
+    return (
+      <AppLayout>
+        <Dashboard />
+      </AppLayout>
+    )
+  }
   return <LandingPage />
 }
 
@@ -24,7 +31,9 @@ function App() {
           path="/watch/:videoId"
           element={
             <ProtectedRoute>
-              <VideoPlayerPage />
+              <AppLayout>
+                <VideoPlayerPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -32,7 +41,9 @@ function App() {
           path="/flashcards"
           element={
             <ProtectedRoute>
-              <FlashcardsPage />
+              <AppLayout>
+                <FlashcardsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
