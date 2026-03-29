@@ -23,12 +23,12 @@ export function Dashboard() {
     async function loadVideos() {
       const { data } = await supabase
         .from('user_videos')
-        .select('video:videoId(id, youtubeId, title, language, createdAt)')
+        .select('videoId, videos(id, youtubeId, title, language, createdAt)')
         .eq('userId', user!.id)
         .order('createdAt', { ascending: false })
 
       const videoList = (data ?? [])
-        .map((row: { video: Video }) => row.video)
+        .map((row) => (row as unknown as { videos: Video }).videos)
         .filter(Boolean)
       setVideos(videoList)
       setLoading(false)
