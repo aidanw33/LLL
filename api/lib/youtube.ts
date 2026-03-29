@@ -17,13 +17,16 @@ export type RawSegment = {
   duration: number
 }
 
-export async function fetchTranscript(youtubeId: string): Promise<RawSegment[]> {
+export async function fetchTranscript(youtubeId: string, lang?: string): Promise<RawSegment[]> {
   const proxyUrl = process.env.TRANSCRIPT_PROXY_URL
   if (!proxyUrl) {
     throw new Error('TRANSCRIPT_PROXY_URL is not configured')
   }
 
-  const res = await fetch(`${proxyUrl}/transcript?videoId=${youtubeId}`)
+  const params = new URLSearchParams({ videoId: youtubeId })
+  if (lang) params.set('lang', lang)
+
+  const res = await fetch(`${proxyUrl}/transcript?${params}`)
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Transcript fetch failed' }))
     throw new Error(err.error)

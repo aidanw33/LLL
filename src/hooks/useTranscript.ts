@@ -8,7 +8,7 @@ export function useTranscript() {
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<TranscriptResponse | null>(null)
 
-  async function fetchTranscript(youtubeUrl: string) {
+  async function fetchTranscript(youtubeUrl: string, lang: string) {
     setLoading(true)
     setError(null)
 
@@ -19,7 +19,7 @@ export function useTranscript() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ youtubeUrl }),
+        body: JSON.stringify({ youtubeUrl, lang }),
       })
 
       if (!res.ok) {

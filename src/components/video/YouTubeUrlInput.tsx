@@ -6,16 +6,35 @@ type Props = {
   onClose: () => void
 }
 
+const LANGUAGES = [
+  { code: 'fr', label: 'French' },
+  { code: 'es', label: 'Spanish' },
+  { code: 'de', label: 'German' },
+  { code: 'it', label: 'Italian' },
+  { code: 'pt', label: 'Portuguese' },
+  { code: 'ja', label: 'Japanese' },
+  { code: 'ko', label: 'Korean' },
+  { code: 'zh', label: 'Chinese' },
+  { code: 'ru', label: 'Russian' },
+  { code: 'ar', label: 'Arabic' },
+  { code: 'hi', label: 'Hindi' },
+  { code: 'nl', label: 'Dutch' },
+  { code: 'sv', label: 'Swedish' },
+  { code: 'pl', label: 'Polish' },
+  { code: 'tr', label: 'Turkish' },
+]
+
 export function YouTubeUrlInput({ onClose }: Props) {
   const [url, setUrl] = useState('')
+  const [lang, setLang] = useState('fr')
   const navigate = useNavigate()
   const { fetchTranscript, loading, error } = useTranscript()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!url.trim()) return
+    if (!url.trim() || !lang) return
 
-    const result = await fetchTranscript(url.trim())
+    const result = await fetchTranscript(url.trim(), lang)
     if (result) {
       navigate(`/watch/${result.video.id}`)
     }
@@ -38,6 +57,19 @@ export function YouTubeUrlInput({ onClose }: Props) {
             disabled={loading}
             autoFocus
           />
+
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            disabled={loading}
+            className="w-full mt-3 rounded-lg bg-slate-900 border border-slate-600 px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.label}
+              </option>
+            ))}
+          </select>
 
           {error && (
             <p className="text-sm text-red-400 mt-2">{error}</p>

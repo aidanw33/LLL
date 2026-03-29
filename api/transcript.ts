@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { prisma } from './lib/prisma.js'
 import { parseYouTubeId, fetchTranscript, fetchVideoTitle } from './lib/youtube.js'
-import { translateTexts, detectLanguage } from './lib/translate.js'
+import { translateTexts } from './lib/translate.js'
 import { verifyAuth } from './lib/auth.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -14,9 +14,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const { youtubeUrl } = req.body as { youtubeUrl?: string }
+  const { youtubeUrl, lang } = req.body as { youtubeUrl?: string; lang?: string }
   if (!youtubeUrl) {
     return res.status(400).json({ error: 'youtubeUrl is required' })
+  }
+  if (!lang) {
+    return res.status(400).json({ error: 'lang is required' })
   }
 
   const youtubeId = parseYouTubeId(youtubeUrl)
@@ -37,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Fetch transcript
   let rawSegments
   try {
-    rawSegments = await fetchTranscript(youtubeId)
+    rawSegments = await fetchTranscript(youtubeId, lang)
   } catch (err) {
     console.error('fetchTranscript failed:', err)
     return res.status(404).json({ error: 'No captions available for this video' })
@@ -46,10 +49,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (rawSegments.length === 0) {
     return res.status(404).json({ error: 'No captions available for this video' })
   }
-
-  // Detect language from first few segments
-  const sampleText = rawSegments.slice(0, 5).map((s) => s.text).join(' ')
-  const language = await detectLanguage(sampleText)
 
   // Translate all segments
   const originalTexts = rawSegments.map((s) => s.text)
@@ -68,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     data: {
       youtubeId,
       title,
-      language,
+      language: lang,
       segments: {
         create: rawSegments.map((seg, i) => ({
           startTime: seg.offset,
