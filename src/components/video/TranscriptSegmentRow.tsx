@@ -5,6 +5,8 @@ type Props = {
   segment: TranscriptSegment
   isActive: boolean
   onSeek: (time: number) => void
+  showOriginal: boolean
+  showTranslated: boolean
 }
 
 function formatTime(seconds: number): string {
@@ -17,6 +19,8 @@ export const TranscriptSegmentRow = memo(function TranscriptSegmentRow({
   segment,
   isActive,
   onSeek,
+  showOriginal,
+  showTranslated,
 }: Props) {
   return (
     <button
@@ -27,11 +31,15 @@ export const TranscriptSegmentRow = memo(function TranscriptSegmentRow({
           : 'hover:bg-slate-800/50 border-l-2 border-transparent'
       }`}
     >
-      <span className="text-xs text-slate-500 font-mono">
+      <span className="text-sm text-slate-500 font-mono">
         {formatTime(segment.startTime)}
       </span>
-      <p className="text-sm text-white mt-1">{segment.originalText}</p>
-      <p className="text-xs text-slate-400 mt-1">{segment.translatedText}</p>
+      {showOriginal && (
+        <p className="text-lg text-white mt-1">{segment.originalText}</p>
+      )}
+      {showTranslated && (
+        <p className="text-base text-slate-400 mt-1">{segment.translatedText}</p>
+      )}
     </button>
   )
 })
