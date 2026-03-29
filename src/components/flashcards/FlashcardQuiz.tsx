@@ -40,19 +40,10 @@ function buildWeightedQueue(cards: Flashcard[]): Flashcard[] {
 
 export function FlashcardQuiz({ flashcards, onUpdate }: Props) {
   const { session } = useAuth()
-  const [queue, setQueue] = useState<Flashcard[]>([])
+  const queue = useMemo(() => buildWeightedQueue(flashcards), [flashcards])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [reviewed, setReviewed] = useState(0)
-
-  useEffect(() => {
-    if (flashcards.length > 0) {
-      setQueue(buildWeightedQueue(flashcards))
-      setCurrentIndex(0)
-      setRevealed(false)
-      setReviewed(0)
-    }
-  }, [flashcards])
 
   const current = queue[currentIndex] ?? null
 

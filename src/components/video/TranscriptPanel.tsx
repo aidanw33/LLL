@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import type { TranscriptSegment } from '../../types/video'
 
 function formatTime(seconds: number): string {
@@ -26,7 +26,7 @@ export function TranscriptPanel({ segments, activeIndex, onSeek, onWordsSelected
 
   const allWords = visibleSegments.flatMap((s) => s.originalText.split(/\s+/)).filter(Boolean)
 
-  const handleWordClick = useCallback((index: number, e: React.MouseEvent) => {
+  function handleWordClick(index: number, e: React.MouseEvent) {
     e.stopPropagation()
 
     setSelectedIndices((prev) => {
@@ -58,7 +58,7 @@ export function TranscriptPanel({ segments, activeIndex, onSeek, onWordsSelected
       onWordsSelected(selectedText)
       return next
     })
-  }, [allWords, onWordsSelected])
+  }
 
   // Reset selection when segments change
   const currentPairKey = pairIndex

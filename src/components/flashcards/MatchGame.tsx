@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Flashcard } from '../../types/video'
 
 type Props = {
@@ -45,18 +45,19 @@ export function MatchGame({ flashcards }: Props) {
   const [matched, setMatched] = useState<Set<string>>(new Set())
   const [wrong, setWrong] = useState<Set<string>>(new Set())
   const [moves, setMoves] = useState(0)
-  const [startTime] = useState(Date.now())
+  const startTime = useRef(0)
   const [elapsed, setElapsed] = useState(0)
   const [complete, setComplete] = useState(false)
 
   // Timer
   useEffect(() => {
+    startTime.current = Date.now()
     if (complete) return
     const interval = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTime) / 1000))
+      setElapsed(Math.floor((Date.now() - startTime.current) / 1000))
     }, 1000)
     return () => clearInterval(interval)
-  }, [startTime, complete])
+  }, [complete])
 
   function handleClick(tile: Tile) {
     if (matched.has(tile.cardId)) return

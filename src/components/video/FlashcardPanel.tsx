@@ -37,13 +37,17 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
   const [editTranslation, setEditTranslation] = useState('')
   const [editComfort, setEditComfort] = useState(1)
 
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${session?.access_token}`,
+  function getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token}`,
+    }
   }
 
   const loadFlashcards = useCallback(async () => {
-    const res = await fetch(`/api/flashcard?videoId=${videoId}`, { headers })
+    const res = await fetch(`/api/flashcard?videoId=${videoId}`, {
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    })
     if (res.ok) {
       const data = await res.json()
       setFlashcards(data.flashcards)
@@ -51,8 +55,20 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
   }, [videoId, session?.access_token])
 
   useEffect(() => {
-    loadFlashcards()
-  }, [loadFlashcards])
+    let cancelled = false
+    async function load() {
+      const res = await fetch(`/api/flashcard?videoId=${videoId}`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      })
+      if (cancelled) return
+      if (res.ok) {
+        const data = await res.json()
+        setFlashcards(data.flashcards)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [videoId, session?.access_token])
 
   // Reset form when selection changes
   useEffect(() => {
@@ -65,7 +81,7 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
     try {
       const res = await fetch('/api/translate', {
         method: 'POST',
-        headers,
+        headers: getHeaders(),
         body: JSON.stringify({ text: selectedWords }),
       })
       if (res.ok) {
@@ -83,7 +99,7 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
     try {
       const res = await fetch('/api/flashcard', {
         method: 'POST',
-        headers,
+        headers: getHeaders(),
         body: JSON.stringify({
           videoId,
           originalText: selectedWords,
@@ -111,7 +127,7 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
   async function handleUpdate(id: string) {
     await fetch('/api/flashcard', {
       method: 'PATCH',
-      headers,
+      headers: getHeaders(),
       body: JSON.stringify({
         id,
         translatedText: editTranslation,
@@ -123,7 +139,7 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
   }
 
   async function handleDelete(id: string) {
-    await fetch(`/api/flashcard?id=${id}`, { method: 'DELETE', headers })
+    await fetch(`/api/flashcard?id=${id}`, { method: 'DELETE', headers: getHeaders() })
     await loadFlashcards()
   }
 

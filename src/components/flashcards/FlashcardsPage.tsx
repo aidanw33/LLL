@@ -31,8 +31,23 @@ export function FlashcardsPage() {
   }, [session])
 
   useEffect(() => {
-    loadFlashcards()
-  }, [loadFlashcards])
+    // Fetch flashcards on mount and when session changes
+    let cancelled = false
+    async function load() {
+      if (!session) return
+      const res = await fetch('/api/flashcard', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (cancelled) return
+      if (res.ok) {
+        const data = await res.json()
+        setFlashcards(data.flashcards)
+      }
+      setLoading(false)
+    }
+    load()
+    return () => { cancelled = true }
+  }, [session])
 
   const availableLanguages = useMemo(() => {
     const langs = new Set(
