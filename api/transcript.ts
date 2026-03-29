@@ -55,14 +55,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ error: 'No captions available for this video' })
   }
 
-  // Translate all segments
-  const originalTexts = rawSegments.map((s) => s.text)
+  // Try fetching English captions first, fall back to Google Translate
   let translatedTexts: string[]
-  try {
-    translatedTexts = await translateTexts(originalTexts)
-  } catch {
-    return res.status(500).json({ error: 'Translation failed' })
+  let usedGoogleApi = false
+  if (lang !== 'en') {
+    try {
+      const englishSegments = await fetchTranscript(youtubeId, 'en')
+      // Only use YouTube English captions if segment count matches
+      if (englishSegments.length === rawSegments.length) {
+        translatedTexts = englishSegments.map((s) => s.text)
+      } else {
+        translatedTexts = await translateTexts(rawSegments.map((s) => s.text))
+        usedGoogleApi = true
+      }
+    } catch {
+      // English captions not available, fall back to Google Translate
+      try {
+        translatedTexts = await translateTexts(rawSegments.map((s) => s.text))
+        usedGoogleApi = true
+      } catch {
+        return res.status(500).json({ error: 'Translation failed' })
+      }
+    }
+  } else {
+    translatedTexts = rawSegments.map((s) => s.text)
   }
+
+  const characterCount = usedGoogleApi
+    ? rawSegments.reduce((sum, s) => sum + s.text.length, 0)
+    : 0
 
   // Fetch video title
   const title = await fetchVideoTitle(youtubeId)
@@ -84,6 +105,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       users: {
         create: { userId },
+      },
+      translationLogs: {
+        create: { usedGoogleApi, characterCount },
       },
     },
     include: { segments: { orderBy: { segmentIndex: 'asc' } } },
