@@ -73,12 +73,20 @@ export function Dashboard() {
             <h1 className="text-3xl font-bold mb-2">Welcome back, {firstName}</h1>
             <p className="text-slate-400">Your video library</p>
           </div>
-          <button
-            onClick={() => setShowImport(true)}
-            className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-5 py-2.5 text-sm font-medium transition-colors"
-          >
-            Import video
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/flashcards')}
+              className="rounded-lg border border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/10 px-5 py-2.5 text-sm font-medium transition-colors"
+            >
+              Study Flashcards
+            </button>
+            <button
+              onClick={() => setShowImport(true)}
+              className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-5 py-2.5 text-sm font-medium transition-colors"
+            >
+              Import video
+            </button>
+          </div>
         </div>
 
         {availableLanguages.length > 1 && (

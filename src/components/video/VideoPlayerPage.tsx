@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useVideoPlayer } from '../../hooks/useVideoPlayer'
 import { YouTubeEmbed } from './YouTubeEmbed'
 import { TranscriptPanel } from './TranscriptPanel'
+import { FlashcardPanel } from './FlashcardPanel'
 import { LoadingScreen } from '../LoadingScreen'
 import { supabase } from '../../lib/supabase'
 import type { TranscriptSegment, Video } from '../../types/video'
@@ -16,6 +17,7 @@ export function VideoPlayerPage() {
   const [segments, setSegments] = useState<TranscriptSegment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedWords, setSelectedWords] = useState<string | null>(null)
 
   useEffect(() => {
     if (!videoId) return
@@ -51,6 +53,14 @@ export function VideoPlayerPage() {
 
   const onPlayerReady = useCallback(() => {}, [])
 
+  const handleWordsSelected = useCallback((words: string | null) => {
+    setSelectedWords(words)
+  }, [])
+
+  const handleFlashcardSaved = useCallback(() => {
+    setSelectedWords(null)
+  }, [])
+
   if (loading) return <LoadingScreen />
 
   if (error || !video) {
@@ -71,7 +81,7 @@ export function VideoPlayerPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <nav className="flex items-center justify-between px-8 py-6 max-w-6xl mx-auto">
+      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <button
           onClick={() => navigate('/')}
           className="text-2xl font-bold tracking-tight hover:text-indigo-400 transition-colors"
@@ -89,18 +99,29 @@ export function VideoPlayerPage() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 pb-12">
-        <YouTubeEmbed
-          ref={playerRef}
-          youtubeId={video.youtubeId}
-          onReady={onPlayerReady}
-        />
+      <main className="max-w-7xl mx-auto px-6 pb-12 flex gap-6">
+        <div className="flex-1 min-w-0">
+          <YouTubeEmbed
+            ref={playerRef}
+            youtubeId={video.youtubeId}
+            onReady={onPlayerReady}
+          />
 
-        <TranscriptPanel
-          segments={segments}
-          activeIndex={activeSegmentIndex}
-          onSeek={seekTo}
-        />
+          <TranscriptPanel
+            segments={segments}
+            activeIndex={activeSegmentIndex}
+            onSeek={seekTo}
+            onWordsSelected={handleWordsSelected}
+          />
+        </div>
+
+        <div className="w-72 shrink-0">
+          <FlashcardPanel
+            selectedWords={selectedWords}
+            videoId={video.id}
+            onSaved={handleFlashcardSaved}
+          />
+        </div>
       </main>
     </div>
   )

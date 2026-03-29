@@ -16,6 +16,7 @@ model Video {
   segments        TranscriptSegment[]
   users           UserVideo[]
   translationLogs TranslationLog[]
+  flashcards      Flashcard[]
 
   @@map("videos")
 }
@@ -41,6 +42,21 @@ model TranslationLog {
   createdAt       DateTime @default(now())
 
   @@map("translation_logs")
+}
+
+model Flashcard {
+  id             String   @id @default(uuid())
+  userId         String
+  videoId        String
+  video          Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  originalText   String
+  translatedText String
+  comfortLevel   Int
+  createdAt      DateTime  @default(now())
+  lastReviewedAt DateTime?
+
+  @@index([userId])
+  @@map("flashcards")
 }
 
 model TranscriptSegment {

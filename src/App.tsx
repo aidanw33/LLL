@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard'
 import { LoadingScreen } from './components/LoadingScreen'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { VideoPlayerPage } from './components/video/VideoPlayerPage'
+import { FlashcardsPage } from './components/flashcards/FlashcardsPage'
 
 function HomePage() {
   const { session, loading } = useAuth()
@@ -24,6 +25,14 @@ function App() {
           element={
             <ProtectedRoute>
               <VideoPlayerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/flashcards"
+          element={
+            <ProtectedRoute>
+              <FlashcardsPage />
             </ProtectedRoute>
           }
         />
