@@ -18,13 +18,18 @@ export type RawSegment = {
 }
 
 export async function fetchTranscript(youtubeId: string): Promise<RawSegment[]> {
-  const mod = await import('youtube-transcript/dist/youtube-transcript.esm.js')
-  const segments = await mod.YoutubeTranscript.fetchTranscript(youtubeId)
-  return segments.map((s: { text: string; offset: number; duration: number }) => ({
-    text: s.text,
-    offset: s.offset / 1000,
-    duration: s.duration / 1000,
-  }))
+  const proxyUrl = process.env.TRANSCRIPT_PROXY_URL
+  if (!proxyUrl) {
+    throw new Error('TRANSCRIPT_PROXY_URL is not configured')
+  }
+
+  const res = await fetch(`${proxyUrl}/transcript?videoId=${youtubeId}`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Transcript fetch failed' }))
+    throw new Error(err.error)
+  }
+
+  return res.json()
 }
 
 export async function fetchVideoTitle(youtubeId: string): Promise<string> {
