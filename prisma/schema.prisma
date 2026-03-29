@@ -14,8 +14,21 @@ model Video {
   language  String?
   createdAt DateTime             @default(now())
   segments  TranscriptSegment[]
+  users     UserVideo[]
 
   @@map("videos")
+}
+
+model UserVideo {
+  id        String   @id @default(uuid())
+  userId    String
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, videoId])
+  @@index([userId])
+  @@map("user_videos")
 }
 
 model TranscriptSegment {

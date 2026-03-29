@@ -34,6 +34,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   })
 
   if (existing) {
+    await prisma.userVideo.upsert({
+      where: { userId_videoId: { userId, videoId: existing.id } },
+      create: { userId, videoId: existing.id },
+      update: {},
+    })
     return res.status(200).json({ video: existing, segments: existing.segments })
   }
 
@@ -76,6 +81,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           translatedText: translatedTexts[i],
           segmentIndex: i,
         })),
+      },
+      users: {
+        create: { userId },
       },
     },
     include: { segments: { orderBy: { segmentIndex: 'asc' } } },
