@@ -13,8 +13,9 @@ model Video {
   title     String
   language  String?
   createdAt DateTime             @default(now())
-  segments  TranscriptSegment[]
-  users     UserVideo[]
+  segments        TranscriptSegment[]
+  users           UserVideo[]
+  translationLogs TranslationLog[]
 
   @@map("videos")
 }
@@ -29,6 +30,17 @@ model UserVideo {
   @@unique([userId, videoId])
   @@index([userId])
   @@map("user_videos")
+}
+
+model TranslationLog {
+  id              String   @id @default(uuid())
+  videoId         String
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  usedGoogleApi   Boolean
+  characterCount  Int
+  createdAt       DateTime @default(now())
+
+  @@map("translation_logs")
 }
 
 model TranscriptSegment {
