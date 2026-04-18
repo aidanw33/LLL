@@ -1,7 +1,9 @@
+import { Lou } from './brand/Lou'
+
 export function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-600 border-t-indigo-400" />
+    <div className="terrarium-bg min-h-screen flex items-center justify-center">
+      <Lou pose="reading" size={120} animated className="text-[var(--color-acid-500)]" />
     </div>
   )
 }

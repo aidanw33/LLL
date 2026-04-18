@@ -56,7 +56,7 @@ try {
   console.warn('Warning: Could not auto-update .env with Supabase credentials.')
 }
 
-// Start Vite dev server
+// Start Vercel dev (frontend + serverless functions)
 console.log('Starting dev server...')
-const vite = spawn('npx', ['vite'], { stdio: 'inherit', shell: true })
-vite.on('exit', (code) => process.exit(code ?? 0))
+const vercel = spawn('npx', ['vercel', 'dev'], { stdio: 'inherit', shell: true })
+vercel.on('exit', (code) => process.exit(code ?? 0))

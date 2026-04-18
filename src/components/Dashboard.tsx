@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import { LANGUAGE_MAP } from '../lib/languages'
 import { YouTubeUrlInput } from './video/YouTubeUrlInput'
+import { EmptyLibrary } from './states'
 import type { Video } from '../types/video'
 
 export function Dashboard() {
@@ -14,7 +15,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [filterLang, setFilterLang] = useState<string | null>(null)
 
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'there'
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? 'friend'
 
   useEffect(() => {
     if (!user) return
@@ -40,101 +41,165 @@ export function Dashboard() {
     return Array.from(langs).sort() as string[]
   }, [videos])
 
+  const languageCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const v of videos) {
+      if (v.language) counts[v.language] = (counts[v.language] ?? 0) + 1
+    }
+    return counts
+  }, [videos])
+
   const filteredVideos = filterLang
     ? videos.filter((v) => v.language === filterLang)
     : videos
 
   return (
-    <div className="px-8 py-10 pb-24 md:pb-10">
+    <div className="px-10 py-10 w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome back, {firstName}</h1>
-          <p className="text-sm text-slate-500 mt-1">Your video library</p>
+      <header className="mb-10 flex items-start justify-between gap-6">
+        <div className="min-w-0">
+          <div className="mono-label">YOUR LIBRARY</div>
+          <h1 className="text-5xl font-normal mt-2 tracking-tight">
+            Welcome back, {firstName}.
+          </h1>
         </div>
         <button
           onClick={() => setShowImport(true)}
-          className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-5 py-2.5 text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20"
+          className="cta-shine shrink-0 rounded-sm bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-acid-400)] transition-colors"
         >
           + Import video
         </button>
-      </div>
+      </header>
 
-      {/* Filters */}
-      {availableLanguages.length > 1 && (
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setFilterLang(null)}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              filterLang === null
-                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/50'
-                : 'bg-slate-800/50 text-slate-500 border border-slate-700/50'
-            }`}
-          >
-            All
-          </button>
+      {/* Language chips */}
+      {availableLanguages.length > 0 && (
+        <div className="flex items-center gap-2 mb-10 flex-wrap">
+          <Chip active={filterLang === null} onClick={() => setFilterLang(null)}>
+            All · {videos.length}
+          </Chip>
           {availableLanguages.map((lang) => (
-            <button
+            <Chip
               key={lang}
+              active={filterLang === lang}
               onClick={() => setFilterLang(lang === filterLang ? null : lang)}
-              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                filterLang === lang
-                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/50'
-                  : 'bg-slate-800/50 text-slate-500 border border-slate-700/50'
-              }`}
             >
-              {LANGUAGE_MAP[lang] ?? lang}
-            </button>
+              {LANGUAGE_MAP[lang] ?? lang} · {languageCounts[lang]}
+            </Chip>
           ))}
+          <Chip ghost onClick={() => setShowImport(true)}>
+            + add video
+          </Chip>
         </div>
       )}
 
       {/* Video grid */}
       {loading ? (
-        <p className="text-slate-500 text-center mt-16">Loading...</p>
+        <p className="mono-label text-center mt-16">LOADING…</p>
+      ) : videos.length === 0 ? (
+        <EmptyLibrary onAdd={() => setShowImport(true)} />
       ) : filteredVideos.length === 0 ? (
-        <div className="text-center mt-24">
-          <div className="text-4xl mb-4">🎬</div>
-          <p className="text-slate-400 mb-2">
-            {videos.length === 0
-              ? 'No videos yet'
-              : 'No videos match this filter'}
-          </p>
-          {videos.length === 0 && (
-            <p className="text-sm text-slate-600">Import your first video to get started.</p>
-          )}
-        </div>
+        <p className="mono-label text-center mt-16">NO VIDEOS MATCH THIS FILTER</p>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredVideos.map((video) => (
-            <button
-              key={video.id}
-              onClick={() => navigate(`/watch/${video.id}`)}
-              className="group rounded-xl bg-slate-800/30 border border-slate-800/50 overflow-hidden text-left hover:border-slate-700 hover:-translate-y-1 transition-all duration-200 hover:shadow-xl hover:shadow-black/20"
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
-                  alt={video.title}
-                  className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-sm font-medium text-slate-200 line-clamp-2 group-hover:text-white transition-colors">
-                  {video.title}
-                </h3>
-                {video.language && (
-                  <span className="inline-block mt-2 px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-700/50 text-slate-400">
-                    {LANGUAGE_MAP[video.language] ?? video.language}
-                  </span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+        <section>
+          <div className="flex items-baseline gap-3 mb-4">
+            <div className="text-xl text-[var(--color-acid-500)]">
+              {filterLang
+                ? `${LANGUAGE_MAP[filterLang] ?? filterLang} · ${filteredVideos.length} videos`
+                : `All · ${filteredVideos.length} videos`}
+            </div>
+            <div className="h-px flex-1 bg-[var(--color-obsidian-700)]" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredVideos.map((video) => (
+              <VideoCard
+                key={video.id}
+                title={video.title}
+                youtubeId={video.youtubeId}
+                lang={video.language ?? undefined}
+                onClick={() => navigate(`/watch/${video.id}`)}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {showImport && <YouTubeUrlInput onClose={() => setShowImport(false)} />}
     </div>
+  )
+}
+
+type VideoCardProps = {
+  title: string
+  youtubeId: string
+  lang?: string
+  onClick: () => void
+}
+
+function VideoCard({ title, youtubeId, lang, onClick }: VideoCardProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="card-lift text-left group rounded-md overflow-hidden border border-[var(--color-obsidian-700)] bg-[var(--color-obsidian-800)] fade-up"
+    >
+      <div className="aspect-video overflow-hidden">
+        <img
+          src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+          alt={title}
+          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+        />
+      </div>
+      <div className="p-3">
+        <div className="text-sm font-semibold line-clamp-2 group-hover:text-[var(--color-acid-500)] transition-colors">
+          {title}
+        </div>
+        {lang && (
+          <div className="mono-label !text-[9px] mt-1">
+            {LANGUAGE_MAP[lang] ?? lang}
+          </div>
+        )}
+      </div>
+    </button>
+  )
+}
+
+function Chip({
+  children,
+  active,
+  ghost,
+  onClick,
+}: {
+  children: React.ReactNode
+  active?: boolean
+  ghost?: boolean
+  onClick?: () => void
+}) {
+  const base = 'px-3 py-1 rounded-full text-xs font-medium border transition-colors'
+  if (active) {
+    return (
+      <button
+        onClick={onClick}
+        className={`${base} bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] border-[var(--color-acid-500)]`}
+      >
+        {children}
+      </button>
+    )
+  }
+  if (ghost) {
+    return (
+      <button
+        onClick={onClick}
+        className={`${base} text-[var(--color-paper-400)] border-dashed border-[var(--color-obsidian-600)] hover:text-[var(--color-paper-200)] hover:border-[var(--color-moss-500)]`}
+      >
+        {children}
+      </button>
+    )
+  }
+  return (
+    <button
+      onClick={onClick}
+      className={`${base} text-[var(--color-paper-200)] border-[var(--color-obsidian-700)] hover:border-[var(--color-moss-500)] hover:text-[var(--color-paper-50)]`}
+    >
+      {children}
+    </button>
   )
 }

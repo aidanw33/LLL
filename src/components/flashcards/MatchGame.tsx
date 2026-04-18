@@ -22,7 +22,6 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function MatchGame({ flashcards }: Props) {
-  // Take up to 8 cards for a manageable grid
   const gameCards = useMemo(() => shuffle(flashcards).slice(0, 8), [flashcards])
 
   const tiles = useMemo<Tile[]>(() => {
@@ -49,7 +48,6 @@ export function MatchGame({ flashcards }: Props) {
   const [elapsed, setElapsed] = useState(0)
   const [complete, setComplete] = useState(false)
 
-  // Timer
   useEffect(() => {
     startTime.current = Date.now()
     if (complete) return
@@ -77,7 +75,6 @@ export function MatchGame({ flashcards }: Props) {
     setMoves((m) => m + 1)
 
     if (selectedTile.cardId === tile.cardId && selectedTile.type !== tile.type) {
-      // Match!
       const newMatched = new Set(matched)
       newMatched.add(tile.cardId)
       setMatched(newMatched)
@@ -86,7 +83,6 @@ export function MatchGame({ flashcards }: Props) {
         setComplete(true)
       }
     } else {
-      // Wrong
       setWrong(new Set([selectedTile.id, tile.id]))
       setTimeout(() => {
         setWrong(new Set())
@@ -100,9 +96,9 @@ export function MatchGame({ flashcards }: Props) {
   if (complete) {
     return (
       <div className="text-center py-16">
-        <p className="text-2xl font-bold text-white mb-2">Matched all pairs!</p>
-        <p className="text-slate-400">
-          {moves} moves in {formatTime(elapsed)}
+        <h2 className="text-3xl tracking-tight">Matched all pairs.</h2>
+        <p className="text-[var(--color-paper-400)] mt-2">
+          {moves} moves in {formatTime(elapsed)}.
         </p>
       </div>
     )
@@ -111,11 +107,11 @@ export function MatchGame({ flashcards }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-slate-400">
-          {matched.size} / {gameCards.length} matched
+        <span className="mono-label">
+          {matched.size} / {gameCards.length} MATCHED
         </span>
-        <div className="flex gap-4 text-sm text-slate-400">
-          <span>Moves: {moves}</span>
+        <div className="flex gap-4 mono-label">
+          <span>MOVES · {moves}</span>
           <span>{formatTime(elapsed)}</span>
         </div>
       </div>
@@ -126,22 +122,24 @@ export function MatchGame({ flashcards }: Props) {
           const isSelected = selected === tile.id
           const isWrong = wrong.has(tile.id)
 
+          const base =
+            'rounded-sm border p-4 min-h-[80px] text-sm font-medium transition-all'
+          const state = isMatched
+            ? 'bg-[color:color-mix(in_oklch,var(--color-acid-500)_15%,transparent)] border-[var(--color-acid-500)]/40 text-[var(--color-acid-500)] opacity-60'
+            : isWrong
+              ? 'bg-[color:color-mix(in_oklch,var(--color-signal-red)_20%,transparent)] border-[var(--color-signal-red)]/60 text-[var(--color-signal-red)] scale-95'
+              : isSelected
+                ? 'bg-[var(--color-obsidian-700)] border-[var(--color-acid-500)] text-[var(--color-acid-500)] scale-105'
+                : tile.type === 'original'
+                  ? 'bg-[var(--color-obsidian-800)] border-[var(--color-obsidian-700)] text-[var(--color-paper-50)] hover:border-[var(--color-moss-500)]'
+                  : 'bg-[var(--color-obsidian-800)] border-[var(--color-obsidian-700)] text-[var(--color-paper-200)] hover:border-[var(--color-moss-500)]'
+
           return (
             <button
               key={tile.id}
               onClick={() => handleClick(tile)}
               disabled={isMatched}
-              className={`rounded-xl border p-4 min-h-[80px] text-sm font-medium transition-all ${
-                isMatched
-                  ? 'bg-green-500/10 border-green-500/30 text-green-400 opacity-50'
-                  : isWrong
-                    ? 'bg-red-500/20 border-red-500/50 text-red-300 scale-95'
-                    : isSelected
-                      ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 scale-105'
-                      : tile.type === 'original'
-                        ? 'bg-slate-800/50 border-slate-700 text-white hover:border-slate-500'
-                        : 'bg-slate-800/50 border-slate-600 text-slate-300 hover:border-slate-400 italic'
-              }`}
+              className={`${base} ${state}`}
             >
               {tile.text}
             </button>
