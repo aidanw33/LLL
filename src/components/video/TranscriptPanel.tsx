@@ -23,8 +23,10 @@ export function TranscriptPanel({ segments, activeIndex, onSeek, onWordsSelected
   const visibleSegments = pairIndex >= 0
     ? [segments[pairIndex], segments[pairIndex + 1]].filter(Boolean)
     : []
-
-  const allWords = visibleSegments.flatMap((s) => s.originalText.split(/\s+/)).filter(Boolean)
+  const hasContent = visibleSegments.length > 0
+  const segWords = visibleSegments.flatMap((s) => s.originalText.split(/\s+/)).filter(Boolean)
+  const translation = visibleSegments.map((s) => s.translatedText).join(' ')
+  const startTime = hasContent ? visibleSegments[0].startTime : 0
 
   function handleWordClick(index: number, e: React.MouseEvent) {
     e.stopPropagation()
@@ -35,14 +37,12 @@ export function TranscriptPanel({ segments, activeIndex, onSeek, onWordsSelected
       if (prev.length === 0) {
         next = [index]
       } else if (prev.includes(index)) {
-        // Deselect: only allow removing from ends
         if (index === prev[0] || index === prev[prev.length - 1]) {
           next = prev.filter((i) => i !== index)
         } else {
           next = prev
         }
       } else {
-        // Only allow adjacent selection
         const min = Math.min(...prev)
         const max = Math.max(...prev)
         if (index === min - 1 || index === max + 1) {
@@ -53,18 +53,16 @@ export function TranscriptPanel({ segments, activeIndex, onSeek, onWordsSelected
       }
 
       const selectedText = next.length > 0
-        ? next.map((i) => allWords[i]).join(' ')
+        ? next.map((i) => segWords[i]).join(' ')
         : null
       onWordsSelected(selectedText)
       return next
     })
   }
 
-  // Reset selection when segments change
-  const currentPairKey = pairIndex
-  const [lastPairKey, setLastPairKey] = useState(currentPairKey)
-  if (currentPairKey !== lastPairKey) {
-    setLastPairKey(currentPairKey)
+  const [lastPairKey, setLastPairKey] = useState(pairIndex)
+  if (pairIndex !== lastPairKey) {
+    setLastPairKey(pairIndex)
     if (selectedIndices.length > 0) {
       setSelectedIndices([])
       onWordsSelected(null)
@@ -72,68 +70,87 @@ export function TranscriptPanel({ segments, activeIndex, onSeek, onWordsSelected
   }
 
   return (
-    <div className="mt-4">
-      <div className="flex gap-2 mb-2">
-        <button
-          onClick={() => setShowOriginal((v) => !v)}
-          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-            showOriginal
-              ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/50'
-              : 'bg-slate-800/50 text-slate-500 border border-slate-700'
-          }`}
-        >
-          Original
-        </button>
-        <button
-          onClick={() => setShowTranslated((v) => !v)}
-          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-            showTranslated
-              ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/50'
-              : 'bg-slate-800/50 text-slate-500 border border-slate-700'
-          }`}
-        >
-          English
-        </button>
-      </div>
-
-      <div className="rounded-xl bg-slate-800/30 border border-slate-700/50 p-4">
-        {visibleSegments.length > 0 ? (
-          <div
-            onClick={() => onSeek(visibleSegments[0].startTime)}
-            className="w-full text-left px-4 py-3 rounded-lg bg-indigo-500/20 border-l-2 border-indigo-400 cursor-pointer"
-          >
-            <span className="text-sm text-slate-500 font-mono">
-              {formatTime(visibleSegments[0].startTime)}
-            </span>
+    <div className="flex flex-col items-center">
+      <div className="relative w-full max-w-3xl rounded-md bg-[var(--color-obsidian-800)] border border-[var(--color-obsidian-700)] px-8 pt-4 pb-5 overflow-hidden text-center">
+        <div
+          className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full opacity-40"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(163,230,53,0.12), transparent 70%)',
+          }}
+        />
+        {hasContent ? (
+          <div className="relative">
             {showOriginal && (
-              <p className="text-lg mt-1 leading-relaxed">
-                {allWords.map((word, i) => (
-                  <span
-                    key={i}
-                    onClick={(e) => handleWordClick(i, e)}
-                    className={`cursor-pointer rounded px-0.5 transition-colors ${
-                      selectedIndices.includes(i)
-                        ? 'bg-indigo-500/40 text-indigo-200'
-                        : 'text-white hover:bg-slate-700/50'
-                    }`}
-                  >
-                    {word}{' '}
-                  </span>
-                ))}
+              <p className="text-[26px] leading-[1.4] text-[var(--color-paper-50)]">
+                {segWords.map((word, i) => {
+                  const isSelected = selectedIndices.includes(i)
+                  return (
+                    <span key={i}>
+                      <span
+                        onClick={(e) => handleWordClick(i, e)}
+                        className={`cursor-pointer transition-colors rounded-sm px-0.5 -mx-0.5 ${
+                          isSelected
+                            ? 'bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)]'
+                            : 'border-b border-dotted border-[var(--color-moss-500)] hover:bg-[var(--color-obsidian-700)] hover:text-[var(--color-acid-500)]'
+                        }`}
+                      >
+                        {word}
+                      </span>
+                      {i < segWords.length - 1 && ' '}
+                    </span>
+                  )
+                })}
               </p>
             )}
             {showTranslated && (
-              <p className="text-base text-slate-400 mt-1">
-                {visibleSegments.map((s) => s.translatedText).join(' ')}
+              <p className="text-[16px] font-[Figtree] text-[var(--color-paper-400)] leading-relaxed mt-3">
+                {translation}
               </p>
             )}
+            <button
+              onClick={() => onSeek(startTime)}
+              className="mono-label hover:!text-[var(--color-acid-500)] transition-colors mt-4 inline-block"
+            >
+              {formatTime(startTime)}
+            </button>
           </div>
         ) : (
-          <p className="px-4 py-3 text-lg text-slate-500">
-            Waiting for playback...
-          </p>
+          <p className="mono-label relative">WAITING FOR PLAYBACK…</p>
         )}
       </div>
+
+      <div className="flex gap-2 mt-4">
+        <ToggleButton active={showOriginal} onClick={() => setShowOriginal((v) => !v)}>
+          Original
+        </ToggleButton>
+        <ToggleButton active={showTranslated} onClick={() => setShowTranslated((v) => !v)}>
+          English
+        </ToggleButton>
+      </div>
     </div>
+  )
+}
+
+function ToggleButton({
+  children,
+  active,
+  onClick,
+}: {
+  children: React.ReactNode
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+        active
+          ? 'bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] border-[var(--color-acid-500)]'
+          : 'text-[var(--color-paper-200)] border-[var(--color-obsidian-700)] hover:border-[var(--color-moss-500)]'
+      }`}
+    >
+      {children}
+    </button>
   )
 }

@@ -25,20 +25,22 @@ export const TranscriptSegmentRow = memo(function TranscriptSegmentRow({
   return (
     <button
       onClick={() => onSeek(segment.startTime)}
-      className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+      className={`w-full text-left px-4 py-3 rounded-sm transition-colors ${
         isActive
-          ? 'bg-indigo-500/20 border-l-2 border-indigo-400'
-          : 'hover:bg-slate-800/50 border-l-2 border-transparent'
+          ? 'bg-[var(--color-obsidian-800)] border-l-2 border-[var(--color-acid-500)]'
+          : 'hover:bg-[var(--color-obsidian-800)] border-l-2 border-transparent'
       }`}
     >
-      <span className="text-sm text-slate-500 font-mono">
-        {formatTime(segment.startTime)}
-      </span>
+      <span className="mono-label">{formatTime(segment.startTime)}</span>
       {showOriginal && (
-        <p className="text-lg text-white mt-1">{segment.originalText}</p>
+        <p className="text-[20px] leading-[1.6] text-[var(--color-paper-50)] mt-1">
+          {segment.originalText}
+        </p>
       )}
       {showTranslated && (
-        <p className="text-base text-slate-400 mt-1">{segment.translatedText}</p>
+        <p className="text-base font-[Figtree] text-[var(--color-paper-400)] mt-1">
+          {segment.translatedText}
+        </p>
       )}
     </button>
   )

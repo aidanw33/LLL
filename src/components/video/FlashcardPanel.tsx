@@ -16,15 +16,18 @@ type Props = {
 }
 
 const COMFORT_LEVELS = [
-  { level: 1, label: 'New', color: 'bg-red-500/20 text-red-300 border-red-500/50' },
-  { level: 2, label: 'Learning', color: 'bg-orange-500/20 text-orange-300 border-orange-500/50' },
-  { level: 3, label: 'Familiar', color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50' },
-  { level: 4, label: 'Known', color: 'bg-green-500/20 text-green-300 border-green-500/50' },
+  { level: 1, label: 'New' },
+  { level: 2, label: 'Learning' },
+  { level: 3, label: 'Familiar' },
+  { level: 4, label: 'Known' },
 ]
 
-function comfortStyle(level: number) {
-  return COMFORT_LEVELS.find((c) => c.level === level)?.color ?? ''
-}
+const COMFORT_COLORS = [
+  'text-[var(--color-signal-red)]',
+  'text-[var(--color-signal-amber)]',
+  'text-[var(--color-moss-400)]',
+  'text-[var(--color-acid-500)]',
+]
 
 export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
   const { session } = useAuth()
@@ -70,7 +73,6 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
     return () => { cancelled = true }
   }, [videoId, session?.access_token])
 
-  // Reset form when selection changes
   useEffect(() => {
     setTranslation('')
   }, [selectedWords])
@@ -144,50 +146,46 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Creation form */}
-      <div className="rounded-xl bg-slate-800/50 border border-slate-700/50 p-5">
-        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">
-          Create Flashcard
-        </h3>
-
+    <div className="sticky top-8 space-y-4">
+      {/* Margin note / create */}
+      <div className="rounded-md bg-[var(--color-obsidian-800)] border border-[var(--color-obsidian-700)] p-4">
+        <div className="mono-label">NEW CARD</div>
         {selectedWords ? (
           <>
-            <div className="rounded-lg bg-slate-900/50 border border-slate-700 p-4 mb-4">
-              <p className="text-lg text-white font-medium">{selectedWords}</p>
+            <div className="text-2xl mt-2 break-words">
+              {selectedWords}
             </div>
 
-            <label className="block text-xs text-slate-400 mb-1">Translation</label>
-            <div className="flex gap-2 mb-4">
+            <div className="mt-3 flex gap-2">
               <input
                 type="text"
                 value={translation}
                 onChange={(e) => setTranslation(e.target.value)}
-                placeholder="Enter translation..."
-                className="flex-1 rounded-lg bg-slate-900 border border-slate-600 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                placeholder="Translation…"
+                className="flex-1 min-w-0 rounded-sm bg-[var(--color-obsidian-900)] border border-[var(--color-obsidian-700)] px-2.5 py-1.5 text-sm font-[Figtree] text-[var(--color-paper-50)] placeholder:text-[var(--color-paper-400)] focus:outline-none focus:border-[var(--color-moss-500)]"
               />
               <button
                 onClick={handleGenerateTranslation}
                 disabled={translating}
-                className="rounded-lg border border-slate-600 hover:border-slate-500 px-3 py-2 text-xs font-medium text-slate-300 transition-colors disabled:opacity-50 shrink-0"
+                className="shrink-0 rounded-sm border border-[var(--color-obsidian-700)] hover:border-[var(--color-moss-500)] px-2.5 py-1.5 mono-label hover:!text-[var(--color-paper-50)] disabled:opacity-50"
               >
-                {translating ? '...' : 'Auto'}
+                {translating ? '…' : 'AUTO'}
               </button>
             </div>
 
-            <label className="block text-xs text-slate-400 mb-1">Comfort level</label>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {COMFORT_LEVELS.map(({ level, label, color }) => (
+            <div className="mono-label mt-3 !text-[var(--color-paper-400)]">LEVEL</div>
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {COMFORT_LEVELS.map(({ level, label }) => (
                 <button
                   key={level}
                   onClick={() => setComfortLevel(level)}
-                  className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                  className={`px-2 py-1 text-xs font-medium rounded-full border transition-colors ${
                     comfortLevel === level
-                      ? color
-                      : 'bg-slate-800/50 text-slate-500 border-slate-700'
+                      ? 'bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] border-[var(--color-acid-500)]'
+                      : 'text-[var(--color-paper-200)] border-[var(--color-obsidian-700)] hover:border-[var(--color-moss-500)]'
                   }`}
                 >
-                  {level}. {label}
+                  {label}
                 </button>
               ))}
             </div>
@@ -195,49 +193,45 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full rounded-lg bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 px-4 py-2.5 text-sm font-medium transition-colors"
+              className="mt-4 w-full py-2 rounded-sm bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] text-sm font-semibold hover:bg-[var(--color-acid-400)] disabled:opacity-50 transition-colors"
             >
-              {saving ? 'Saving...' : 'Save flashcard'}
+              {saving ? 'Saving…' : '+ Flashcard'}
             </button>
           </>
         ) : (
-          <p className="text-sm text-slate-500">
-            Click words in the transcript to create a flashcard.
-          </p>
+          <div className="text-sm text-[var(--color-paper-400)] mt-2">
+            Click any word.
+          </div>
         )}
       </div>
 
-      {/* Flashcard list */}
+      {/* Saved list */}
       {flashcards.length > 0 && (
-        <div className="rounded-xl bg-slate-800/50 border border-slate-700/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">
-            Flashcards ({flashcards.length})
-          </h3>
-
-          <div className="space-y-2">
+        <div className="rounded-md bg-[var(--color-obsidian-800)] border border-[var(--color-obsidian-700)] p-4">
+          <div className="mono-label mb-3">SAVED · {flashcards.length}</div>
+          <ul className="space-y-3 font-[Figtree]">
             {flashcards.map((card) => (
-              <div
-                key={card.id}
-                className="rounded-lg bg-slate-900/50 border border-slate-700 p-3"
-              >
+              <li key={card.id}>
                 {editingId === card.id ? (
-                  <>
-                    <p className="text-sm text-white font-medium mb-2">{card.originalText}</p>
+                  <div>
+                    <p className="text-sm text-[var(--color-paper-50)] font-medium mb-2 break-words">
+                      {card.originalText}
+                    </p>
                     <input
                       type="text"
                       value={editTranslation}
                       onChange={(e) => setEditTranslation(e.target.value)}
-                      className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors mb-2"
+                      className="w-full rounded-sm bg-[var(--color-obsidian-900)] border border-[var(--color-obsidian-700)] px-2.5 py-1.5 text-sm text-[var(--color-paper-50)] focus:outline-none focus:border-[var(--color-moss-500)] mb-2"
                     />
                     <div className="grid grid-cols-4 gap-1 mb-2">
-                      {COMFORT_LEVELS.map(({ level, color }) => (
+                      {COMFORT_LEVELS.map(({ level }) => (
                         <button
                           key={level}
                           onClick={() => setEditComfort(level)}
-                          className={`px-2 py-1 text-xs font-medium rounded border transition-colors ${
+                          className={`px-2 py-1 text-xs font-medium rounded-sm border transition-colors ${
                             editComfort === level
-                              ? color
-                              : 'bg-slate-800/50 text-slate-500 border-slate-700'
+                              ? 'bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] border-[var(--color-acid-500)]'
+                              : 'text-[var(--color-paper-200)] border-[var(--color-obsidian-700)] hover:border-[var(--color-moss-500)]'
                           }`}
                         >
                           {level}
@@ -247,50 +241,50 @@ export function FlashcardPanel({ selectedWords, videoId, onSaved }: Props) {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleUpdate(card.id)}
-                        className="flex-1 rounded-lg bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 text-xs font-medium transition-colors"
+                        className="flex-1 rounded-sm bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--color-acid-400)]"
                       >
                         Save
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="flex-1 rounded-lg border border-slate-600 hover:border-slate-500 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors"
+                        className="flex-1 rounded-sm border border-[var(--color-obsidian-700)] hover:border-[var(--color-moss-500)] px-3 py-1.5 text-xs font-medium text-[var(--color-paper-200)]"
                       >
                         Cancel
                       </button>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-sm text-white font-medium">{card.originalText}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{card.translatedText}</p>
-                      </div>
-                      <span className={`shrink-0 px-2 py-0.5 text-xs font-medium rounded border ${comfortStyle(card.comfortLevel)}`}>
-                        {card.comfortLevel}
-                      </span>
+                  <div className="group">
+                    <div className="flex items-baseline gap-2 text-sm">
+                      <span className="font-semibold break-words">{card.originalText}</span>
+                      <span className="text-[var(--color-paper-400)]">·</span>
+                      <span className="text-[var(--color-paper-200)] break-words">{card.translatedText}</span>
                     </div>
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className={`mono-label !text-[9px] ${COMFORT_COLORS[card.comfortLevel - 1]}`}>
+                        L{card.comfortLevel}
+                      </span>
                       <button
                         onClick={() => startEditing(card)}
-                        className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                        className="mono-label !text-[9px] opacity-0 group-hover:opacity-100 hover:!text-[var(--color-acid-500)] transition-opacity"
                       >
-                        Edit
+                        EDIT
                       </button>
                       <button
                         onClick={() => handleDelete(card.id)}
-                        className="text-xs text-red-500/70 hover:text-red-400 transition-colors"
+                        className="mono-label !text-[9px] opacity-0 group-hover:opacity-100 hover:!text-[var(--color-signal-red)] transition-opacity"
                       >
-                        Delete
+                        DELETE
                       </button>
                     </div>
-                  </>
+                  </div>
                 )}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
+
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { FlashcardPanel } from './FlashcardPanel'
 import { BackHeader } from '../layout/BackHeader'
 import { LoadingScreen } from '../LoadingScreen'
 import { supabase } from '../../lib/supabase'
+import { Lou } from '../brand/Lou'
 import type { TranscriptSegment, Video } from '../../types/video'
 
 export function VideoPlayerPage() {
@@ -64,16 +65,20 @@ export function VideoPlayerPage() {
 
   if (error || !video) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-lg text-slate-400 mb-4">{error ?? 'Video not found'}</p>
-          <button
-            onClick={() => navigate('/')}
-            className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-6 py-2 text-sm font-medium transition-colors"
-          >
-            Back to dashboard
-          </button>
-        </div>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
+        <Lou pose="skeptic" size={140} className="text-[var(--color-signal-red)]" />
+        <h2 className="text-4xl leading-[1.1] mt-5 tracking-tight">
+          {error ?? 'Video not found'}
+        </h2>
+        <p className="text-[var(--color-paper-400)] text-sm mt-4 font-[Figtree]">
+          "Lou checked. Twice."
+        </p>
+        <button
+          onClick={() => navigate('/')}
+          className="mt-6 rounded-sm bg-[var(--color-acid-500)] text-[var(--color-obsidian-900)] px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-acid-400)]"
+        >
+          ← Back to library
+        </button>
       </div>
     )
   }
@@ -82,23 +87,25 @@ export function VideoPlayerPage() {
     <div>
       <BackHeader title={video.title} />
 
-      <div className="px-6 py-6 pb-24 md:pb-6 flex gap-6">
-        <div className="flex-1 min-w-0">
+      <div className="px-10 py-8 w-full grid grid-cols-[minmax(0,1fr)_360px] gap-8">
+        <div className="min-w-0">
           <YouTubeEmbed
             ref={playerRef}
             youtubeId={video.youtubeId}
             onReady={onPlayerReady}
           />
 
-          <TranscriptPanel
-            segments={segments}
-            activeIndex={activeSegmentIndex}
-            onSeek={seekTo}
-            onWordsSelected={handleWordsSelected}
-          />
+          <div className="mt-2">
+            <TranscriptPanel
+              segments={segments}
+              activeIndex={activeSegmentIndex}
+              onSeek={seekTo}
+              onWordsSelected={handleWordsSelected}
+            />
+          </div>
         </div>
 
-        <div className="w-72 shrink-0">
+        <div className="shrink-0">
           <FlashcardPanel
             selectedWords={selectedWords}
             videoId={video.id}

@@ -1,1 +1,164 @@
+/* LLL design tokens — Terminal Terrarium */
+
 @import "tailwindcss";
+
+@theme {
+  /* ── color: obsidian + moss + acid ───────────────────── */
+  --color-obsidian-950: #07090a;
+  --color-obsidian-900: #0a0e0a;
+  --color-obsidian-800: #141a14;
+  --color-obsidian-700: #1c231c;
+  --color-obsidian-600: #2a332a;
+
+  --color-moss-500: #5a8a5a;
+  --color-moss-400: #7aa676;
+
+  --color-acid-500: #a3e635;
+  --color-acid-400: #b8ec5a;
+  --color-acid-600: #86c020;
+
+  --color-paper-50:  #f0ece0;
+  --color-paper-200: #c8c4b8;
+  --color-paper-400: #8a8878;
+
+  --color-signal-red:    #e06a5a;
+  --color-signal-amber:  #e8b547;
+
+  /* ── typography ──────────────────────────────────────── */
+  --font-display: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "Courier New", monospace;
+
+  /* ── radius ──────────────────────────────────────────── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+html, body {
+  background: var(--color-obsidian-900);
+  color: var(--color-paper-50);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+}
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-moss-500);
+}
+
+/* ── animated ambient background ───────────────────────── */
+.terrarium-bg {
+  position: relative;
+  background: var(--color-obsidian-900);
+  isolation: isolate;
+}
+.terrarium-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 18% 8%, rgba(163,230,53,0.10), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 85% 92%, rgba(90,138,90,0.12), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 65% 35%, rgba(163,230,53,0.05), transparent 70%);
+  animation: lll-terrarium-drift 18s ease-in-out infinite alternate;
+}
+@keyframes lll-terrarium-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+  50%  { transform: translate3d(1.5%, -1%, 0) scale(1.04); opacity: 1; }
+  100% { transform: translate3d(-1%, 1.5%, 0) scale(1.02); opacity: 0.9; }
+}
+
+/* ── card lift on hover ────────────────────────────────── */
+.card-lift {
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 240ms ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-moss-500);
+  box-shadow:
+    0 12px 32px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(163, 230, 53, 0.15),
+    0 0 28px -10px rgba(163, 230, 53, 0.35);
+}
+
+/* ── primary CTA shine ─────────────────────────────────── */
+.cta-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.cta-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 700ms ease;
+  pointer-events: none;
+}
+.cta-shine:hover::after {
+  transform: translateX(120%);
+}
+
+/* ── quiz card pulsing acid edge ───────────────────────── */
+.quiz-card-glow {
+  box-shadow: 6px 6px 0 var(--color-acid-500);
+  animation: lll-quiz-pulse 3.6s ease-in-out infinite;
+}
+@keyframes lll-quiz-pulse {
+  0%, 100% {
+    box-shadow:
+      6px 6px 0 var(--color-acid-500),
+      0 0 0 0 rgba(163, 230, 53, 0);
+  }
+  50% {
+    box-shadow:
+      6px 6px 0 var(--color-acid-500),
+      0 0 48px -8px rgba(163, 230, 53, 0.35);
+  }
+}
+
+/* ── staggered fade-in for grids ───────────────────────── */
+@keyframes lll-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: lll-fade-up 380ms ease both;
+}
+
+/* ── landing hero acid ring ────────────────────────────── */
+.acid-ring {
+  position: relative;
+}
+.acid-ring::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(163, 230, 53, 0.18),
+    rgba(163, 230, 53, 0) 35%,
+    rgba(90, 138, 90, 0.18) 65%,
+    rgba(163, 230, 53, 0.22)
+  );
+  filter: blur(28px);
+  animation: lll-acid-spin 14s linear infinite;
+  z-index: 0;
+}
+@keyframes lll-acid-spin {
+  to { transform: rotate(360deg); }
+}
